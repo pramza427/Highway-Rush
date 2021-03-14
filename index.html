@@ -15,6 +15,9 @@
 
 <script type="text/javascript">
 playerPos = {x: 100, y: 300};
+direction = { left: false, right: false, up: false, down: false};
+score = 0;
+currentSpeed = 5;
 
 function init() {
   window.requestAnimationFrame(draw);
@@ -26,12 +29,63 @@ function draw() {
   ctx.globalCompositeOperation = 'destination-over';
   ctx.clearRect(0, 0, 1000, 600); // clear canvas
 
+  updatePlayerPos();
+
   // Draw player
   ctx.fillStyle = 'green';
   ctx.fillRect(playerPos.x, playerPos.y, 110, 50);
 
   window.requestAnimationFrame(draw);
 }
+
+// updates player Position depending on what keys are clicked
+function updatePlayerPos(){
+  if(direction.right == true){
+    if(playerPos.x < canvas.width-100)
+      playerPos.x += currentSpeed;
+  }
+  if(direction.left == true){
+    if(playerPos.x > 0)
+      playerPos.x -= currentSpeed;
+  }
+  if(direction.up == true){
+    if(playerPos.y > 100)
+      playerPos.y -= currentSpeed;
+  }
+  if(direction.down == true){
+    if(playerPos.y < 450)
+      playerPos.y += currentSpeed;
+  }
+
+  score += currentSpeed;
+}
+
+
+// --------------- keyboard listeners ---------------------- //
+window.addEventListener('keydown', event => {
+  console.log("Pressed: " + event.key);
+  if(event.key == "ArrowLeft" || event.key == "a")
+      direction.left = true;
+  if(event.key ==  "ArrowUp" || event.key == "w") // up arrow
+      direction.up = true;
+  if(event.key == "ArrowRight" || event.key == "d") // right arrow
+      direction.right = true;
+  if(event.key == "ArrowDown" || event.key == "s") // down arrow
+      direction.down = true;
+});
+
+window.addEventListener('keyup', event => {
+  console.log("Released: " + event.key);
+  if(event.key == "ArrowLeft" || event.key == "a")
+      direction.left = false;
+  if(event.key ==  "ArrowUp" || event.key == "w") // up arrow
+      direction.up = false;
+  if(event.key == "ArrowRight" || event.key == "d") // right arrow
+      direction.right = false;
+  if(event.key == "ArrowDown" || event.key == "s") // down arrow
+      direction.down = false;
+});
+// --------------- keyboard listeners ---------------------- //
 
 init();
 
