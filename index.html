@@ -1,3 +1,17 @@
+<style>
+div{
+  font-size: 30px;
+  text-align: center;
+  width: 100%;
+  margin: auto;
+}
+button{
+  font-size: 30px;
+  width: 200px;
+  height: 50px;
+}
+</style>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,22 +22,40 @@
 </head>
 
 <body>
+    <div id="welcome">
+      <div id="text">
+        Welcome to Street Racer.<br>
+        Use wasd or the arrow keys to move.<br>
+        Don't hit other cars and don't run out of gas.
+      </div>
+      <button id="playGame">Start</button>
+    </div>
     <canvas id="canvas" width="1000" height="600"></canvas>
+    <div id="gameOver">
+      <div>Game Over</div>
+      <button id="restart">Restart</button>
+    </div>
 </body>
 </style>
 </html>
 
 <script type="text/javascript">
-playerPos = {x: 100, y: 300};
+playerPos = {x: 100, y:300};
 enemyPos = [];
-var now;
 direction = { left: false, right: false, up: false, down: false};
-score = 0;
+let now; // keep track of time to increase difficulty gradually
 currentSpeed = 5;
+score = 0;
 fuel = 200;
 lastSecond = 0;
+gameOver = false;
+lives = 3;
+
+document.querySelector("#canvas").style.display = "none";
+document.querySelector("#gameOver").style.display = "none";
 
 function init() {
+  now = new Date();
   window.requestAnimationFrame(draw);
 }
 
@@ -57,7 +89,10 @@ function draw() {
 
   drawBackground(ctx);
 
-  window.requestAnimationFrame(draw);
+  if(!gameOver)
+    window.requestAnimationFrame(draw);
+  if(gameOver)
+    document.querySelector("#gameOver").style.display = "block";
 }
 
 // updates player Position depending on what keys are clicked
@@ -111,27 +146,56 @@ function drawBackground(ctx){
       ctx.stroke();
     }
   }
+  // Draw road
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 100, 1000, 400);
   ctx.fillStyle = "darkgray";
   ctx.fillRect(0, 80, 1000, 440);
   
+  // Draw Score
+  ctx.font = "30px Arial";
+  ctx.fillText("Score: "+Math.floor(score/100), 50, 50);
+
+  // Draw Lives
+  ctx.fillText("Lives: "+lives, 800, 50);
+
+  // Draw Fuel
   ctx.font = "30px Arial";
   ctx.fillText("Fuel", 300, 50);
-
   ctx.strokeStyle = "black";
   ctx.strokeRect(400, 20, 200, 40);
+
   if(fuel > 50)
     ctx.fillStyle = "green";
   else
     ctx.fillStyle = "red";
   ctx.fillRect(400, 20, fuel, 40);
+
+  // Decrement Fuel
   if(fuel > 0)
     fuel -= 0.1;
   if(fuel <= 0.1)
     gameOver = true;
 
 }
+
+// --------------- Start button Clicked -------------------- //
+document.querySelector("#playGame").addEventListener("click", event => {
+  document.querySelector("#welcome").style.display = "none";
+  document.querySelector("#canvas").style.display = "block";
+  init();
+});
+
+// --------------- Restart button Clicked -------------------- //
+document.querySelector("#restart").addEventListener("click", event => {
+  document.querySelector("#gameOver").style.display = "none";
+  fuel = 200;
+  gameOver = false;
+  playerPos = {x: 100, y:300};
+  enemyPos = [];
+  lives = 3;
+  init();
+});
 
 // --------------- keyboard listeners ---------------------- //
 window.addEventListener('keydown', event => {
@@ -158,7 +222,5 @@ window.addEventListener('keyup', event => {
       direction.down = false;
 });
 // --------------- keyboard listeners ---------------------- //
-
-init();
 
 </script>
