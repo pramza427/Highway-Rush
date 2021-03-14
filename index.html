@@ -15,25 +15,47 @@
 
 <script type="text/javascript">
 playerPos = {x: 100, y: 300};
+enemyPos = [];
+var now;
 direction = { left: false, right: false, up: false, down: false};
 score = 0;
 currentSpeed = 5;
+fuel = 200;
+lastSecond = 0;
 
 function init() {
   window.requestAnimationFrame(draw);
 }
 
 function draw() {
+  now = new Date();
   var ctx = document.getElementById('canvas').getContext('2d');
 
   ctx.globalCompositeOperation = 'destination-over';
   ctx.clearRect(0, 0, 1000, 600); // clear canvas
 
+  if(enemyPos.length < 8 && now.getSeconds() != lastSecond){
+    spawnEnemy();
+  }
+
   updatePlayerPos();
+
+  // draw and update enemies
+  enemyPos.forEach(pos => {
+    ctx.fillStyle = "red";
+    ctx.fillRect(pos.x, pos.y, 110, 50);
+    pos.x -= currentSpeed/2;
+    if(pos.x < -110){
+      index = enemyPos.indexOf(pos)
+      enemyPos.splice(index, 1);
+    }
+  });
 
   // Draw player
   ctx.fillStyle = 'green';
   ctx.fillRect(playerPos.x, playerPos.y, 110, 50);
+
+  drawBackground(ctx);
 
   window.requestAnimationFrame(draw);
 }
@@ -60,6 +82,56 @@ function updatePlayerPos(){
   score += currentSpeed;
 }
 
+// spawns an enemy on a random lane at a random position in the lane
+lastEnemyLane = 0;
+function spawnEnemy(){
+  lastSecond = now.getSeconds();
+  let lane = Math.floor(Math.random()*4);
+  if(lane == lastEnemyLane){
+    lane++;
+    if(lane > 3)
+      lane = 0;
+  }
+  lastEnemyLane = lane;
+  let positionInLane = Math.floor(Math.random()*50);
+  let enemyY = 100 + lane*100 + positionInLane;
+  let xOffset = Math.floor(Math.random()*200);
+  enemyPos.push({x: 1000+xOffset, y: enemyY})
+}
+
+// Draws the background and animates it
+function drawBackground(ctx){
+  for(let i = 2; i < 5; i++){
+    for(let j = 0; j < 11; j ++){
+      ctx.strokeStyle = "yellow";
+      ctx.lineWidth = "5";
+      ctx.beginPath();
+      ctx.moveTo(j*100-score%100, i*100);
+      ctx.lineTo(j*100+70-score%100, i*100);
+      ctx.stroke();
+    }
+  }
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 100, 1000, 400);
+  ctx.fillStyle = "darkgray";
+  ctx.fillRect(0, 80, 1000, 440);
+  
+  ctx.font = "30px Arial";
+  ctx.fillText("Fuel", 300, 50);
+
+  ctx.strokeStyle = "black";
+  ctx.strokeRect(400, 20, 200, 40);
+  if(fuel > 50)
+    ctx.fillStyle = "green";
+  else
+    ctx.fillStyle = "red";
+  ctx.fillRect(400, 20, fuel, 40);
+  if(fuel > 0)
+    fuel -= 0.1;
+  if(fuel <= 0.1)
+    gameOver = true;
+
+}
 
 // --------------- keyboard listeners ---------------------- //
 window.addEventListener('keydown', event => {
