@@ -42,7 +42,7 @@ button{
 <script type="text/javascript">
 playerPos = {x: 100, y:300};
 enemyPos = [];
-fuelCanPos = {x:-1, y:-1};
+fuelCanPos = {x:-50, y:0};
 direction = { left: false, right: false, up: false, down: false};
 currentSpeed = 7;
 playerSpeed = 10;
@@ -52,30 +52,36 @@ gameOver = false;
 lives = 3;
 frameCounter = 0;
 width = window.innerWidth;
-
+// set canvas to window width
 document.querySelector("#canvas").width = width;
+// hide the canvas and game over div
 document.querySelector("#canvas").style.display = "none";
 document.querySelector("#gameOver").style.display = "none";
 
+// Start the animation
 function init() {
   window.requestAnimationFrame(draw);
 }
 
+// heavy lifting animation function
 function draw() {
   var ctx = document.getElementById('canvas').getContext('2d');
 
   ctx.globalCompositeOperation = 'destination-over';
   ctx.clearRect(0, 0, width, 600); // clear canvas
 
+  // spawn enemies based on current speed and frmae count
   enemyCount = Math.floor(currentSpeed/2);
-  if(enemyPos.length <= enemyCount && frameCounter%(Math.floor(((width+500)/currentSpeed)/enemyCount)) === 0){
+  if(enemyPos.length <= enemyCount && frameCounter%(Math.floor((2400/currentSpeed)/enemyCount)) === 0){
     spawnEnemy();
   }
+  // spawn fuel cans based on frame count
   if(frameCounter%700 === 0){
   	spawnFuel();
   }
+  // change speed based on frame count
   if(frameCounter%1200 === 0){
-  	if(currentSpeed < 20){
+  	if(currentSpeed < 15){
   		currentSpeed++;
   		console.log("Current Speed: " + currentSpeed);
   	}
@@ -85,78 +91,93 @@ function draw() {
 
   // draw and update enemies
   enemyPos.forEach(pos => {
+  	// color and draw each enemy
     ctx.fillStyle = pos.color;
     ctx.fillRect(pos.x, pos.y, 110, 50);
     pos.x -= currentSpeed-4;
+    // remove enemies that are off the screen
     if(pos.x < -110){
       index = enemyPos.indexOf(pos)
       enemyPos.splice(index, 1);
     }
   });
   
+  // move and draw fuel can
   fuelCanPos.x -= currentSpeed-4
   ctx.fillStyle = "darkgreen";
   ctx.fillRect(fuelCanPos.x, fuelCanPos.y, 40, 50);
 
+  // remove 1 life if player hits enemy
   if(enemyCollision(playerPos)){
   	lives--;
   	if(lives === 0)
   		gameOver = true;
   }
   
+  // check if player is hitting fuel can
   fuelCollision();
+
   // Draw player
   ctx.fillStyle = 'green';
   ctx.fillRect(playerPos.x, playerPos.y, 110, 50);
 
   drawBackground(ctx);
 
-  if(!gameOver)
+  // keep animating if game is not over
+  if(!gameOver){
+  	frameCounter++;  // keep track of game frames
     window.requestAnimationFrame(draw);
+  }
+  // otherwise stop animation and show game over div
   if(gameOver)
-    document.querySelector("#gameOver").style.display = "block";
-	
-  frameCounter++;
+    document.querySelector("#gameOver").style.display = "block";  
 }
 
 // updates player Position depending on what keys are clicked
 function updatePlayerPos(){
   if(direction.right == true){
     if(playerPos.x < canvas.width-100)
-      playerPos.x += 10;
+      playerPos.x += 12;
   }
   if(direction.left == true){
     if(playerPos.x > 0)
-      playerPos.x -= 10;
+      playerPos.x -= 12;
   }
   if(direction.up == true){
     if(playerPos.y > 100)
-      playerPos.y -= 10;
+      playerPos.y -= 12;
   }
   if(direction.down == true){
     if(playerPos.y < 450)
-      playerPos.y += 10;
+      playerPos.y += 12;
   }
 
   score += currentSpeed;
 }
 
 // spawns an enemy on a random lane at a random position in the lane
-lastEnemyLane = 0;
+// with a random color
+lastEnemyLane = 0; // keep track of last spawn to not overlap
 function spawnEnemy(){
   colors = ["white", "grey", "red", "blue", "pink", "purple", "brown", "orange", "darkred", "lightred", "cyan", "cornflowerblue", "magenta", "lightmagenta"];
-  let lane = Math.floor(Math.random()*4);
+  // choose a lane, if it was the last one used then dont use it
+  let lane = Math.floor(Math.random()*4); 
   if(lane == lastEnemyLane){
     lane++;
     if(lane > 3)
       lane = 0;
   }
   lastEnemyLane = lane;
+  // set a vertical position in that lane
   let positionInLane = Math.floor(Math.random()*50);
+  // then a little math to get the enemy y position
   let enemyY = 100 + lane*100 + positionInLane;
+  // offset the x position to make the road feel more natural
   let xOffset = Math.floor(Math.random()*100);
+  // set car color
   let carColor = Math.floor(Math.random()*colors.length);
-  enemyPos.push({x: width+xOffset, y: enemyY, color: colors[carColor]});
+  // add enemy to enemy list
+  enemyPos.push({x: width+xOffset, y: enemyY, color: colors[carColor]}); 
 }
 
 // check if pos object is hitting enemy
@@ -165,6 +186,8 @@ function enemyCollision(pos){
 	enemyPos.forEach( enemy => {
 		xdist = Math.abs(enemy.x - pos.x);
 		ydist = Math.abs(enemy.y - pos.y);
+		// if distances are less than enemy size, its a hit
+		// move enemy to off screen where they will be removed in draw
 		if(xdist < 100 && ydist < 50){
 			hit = true;
 			enemy.x = -150;
@@ -172,27 +195,30 @@ function enemyCollision(pos){
 	});
 	return hit;
 }
+
+// check gas can and player collisison
 function fuelCollision(){
-	// check gas can and player collisison
 	xcan = Math.abs(fuelCanPos.x - playerPos.x);
 	ycan = Math.abs(fuelCanPos.y - playerPos.y);
+	// if colliding then remove gas can from screen,
+	// then add value to fuel 
 	if(xcan < 100 && ycan < 50){
 		fuelCanPos = {x: -50, y:0}
-		newfuel = fuel + 75;
-		if(newfuel > 200)
+		newfuel = fuel + 90;  // add fuel
+		if(newfuel > 200)  // don't overshoot max 200
 			fuel = 200;
 		else 
 			fuel = newfuel;
 	}
 }
 
-// Spawns dark green rect for fuel and checks for collision
+// Spawns dark green rect for fuel and checks for enemy collision
 function spawnFuel(){
 	let lane = Math.floor(Math.random()*4);
   	fuelCanPos = {x: width+50, y: 130+lane*100}
-  	if(enemyCollision(fuelCanPos)){
+  	if(enemyCollision(fuelCanPos))  // if colliding, move so it's not
   		fuelCollision.x += 130;
-  	}
+  	
 }
 
 // Draws the background and animates it
@@ -243,6 +269,7 @@ function drawBackground(ctx){
 }
 
 // --------------- Start button Clicked -------------------- //
+// Remove welcome div, show canvas, start animation
 document.querySelector("#playGame").addEventListener("click", event => {
   document.querySelector("#welcome").style.display = "none";
   document.querySelector("#canvas").style.display = "block";
@@ -250,6 +277,7 @@ document.querySelector("#playGame").addEventListener("click", event => {
 });
 
 // --------------- Restart button Clicked -------------------- //
+// Reset all values
 document.querySelector("#restart").addEventListener("click", event => {
   document.querySelector("#gameOver").style.display = "none";
   fuel = 200;
@@ -286,6 +314,7 @@ window.addEventListener('keyup', event => {
 });
 // --------------- keyboard listeners ---------------------- //
 
+// --------------- window resize listener ------------------ //
 window.addEventListener('resize', event =>{
 	width = window.innerWidth;
 	document.querySelector("#canvas").width = width;
