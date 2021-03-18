@@ -30,7 +30,7 @@ button{
       </div>
       <button id="playGame">Start</button>
     </div>
-    <canvas id="canvas" width="1000" height="600"></canvas>
+    <canvas id="canvas" width="1800" height="600"></canvas>
     <div id="gameOver">
       <div>Game Over</div>
       <button id="restart">Restart</button>
@@ -42,47 +42,69 @@ button{
 <script type="text/javascript">
 playerPos = {x: 100, y:300};
 enemyPos = [];
+fuelCanPos = {x:-1, y:-1};
 direction = { left: false, right: false, up: false, down: false};
-let now; // keep track of time to increase difficulty gradually
-currentSpeed = 5;
+currentSpeed = 7;
+playerSpeed = 10;
 score = 0;
 fuel = 200;
-lastSecond = 0;
 gameOver = false;
 lives = 3;
+frameCounter = 0;
+width = window.innerWidth;
 
+document.querySelector("#canvas").width = width;
 document.querySelector("#canvas").style.display = "none";
 document.querySelector("#gameOver").style.display = "none";
 
 function init() {
-  now = new Date();
   window.requestAnimationFrame(draw);
 }
 
 function draw() {
-  now = new Date();
   var ctx = document.getElementById('canvas').getContext('2d');
 
   ctx.globalCompositeOperation = 'destination-over';
-  ctx.clearRect(0, 0, 1000, 600); // clear canvas
+  ctx.clearRect(0, 0, width, 600); // clear canvas
 
-  if(enemyPos.length < 8 && now.getSeconds() != lastSecond){
+  enemyCount = Math.floor(currentSpeed/2);
+  if(enemyPos.length <= enemyCount && frameCounter%(Math.floor(((width+500)/currentSpeed)/enemyCount)) === 0){
     spawnEnemy();
+  }
+  if(frameCounter%700 === 0){
+  	spawnFuel();
+  }
+  if(frameCounter%1200 === 0){
+  	if(currentSpeed < 20){
+  		currentSpeed++;
+  		console.log("Current Speed: " + currentSpeed);
+  	}
   }
 
   updatePlayerPos();
 
   // draw and update enemies
   enemyPos.forEach(pos => {
-    ctx.fillStyle = "red";
+    ctx.fillStyle = pos.color;
     ctx.fillRect(pos.x, pos.y, 110, 50);
-    pos.x -= currentSpeed/2;
+    pos.x -= currentSpeed-4;
     if(pos.x < -110){
       index = enemyPos.indexOf(pos)
       enemyPos.splice(index, 1);
     }
   });
+  
+  fuelCanPos.x -= currentSpeed-4
+  ctx.fillStyle = "darkgreen";
+  ctx.fillRect(fuelCanPos.x, fuelCanPos.y, 40, 50);
 
+  if(enemyCollision(playerPos)){
+  	lives--;
+  	if(lives === 0)
+  		gameOver = true;
+  }
+  
+  fuelCollision();
   // Draw player
   ctx.fillStyle = 'green';
   ctx.fillRect(playerPos.x, playerPos.y, 110, 50);
@@ -93,25 +115,27 @@ function draw() {
     window.requestAnimationFrame(draw);
   if(gameOver)
     document.querySelector("#gameOver").style.display = "block";
+	
+  frameCounter++;
 }
 
 // updates player Position depending on what keys are clicked
 function updatePlayerPos(){
   if(direction.right == true){
     if(playerPos.x < canvas.width-100)
-      playerPos.x += currentSpeed;
+      playerPos.x += 10;
   }
   if(direction.left == true){
     if(playerPos.x > 0)
-      playerPos.x -= currentSpeed;
+      playerPos.x -= 10;
   }
   if(direction.up == true){
     if(playerPos.y > 100)
-      playerPos.y -= currentSpeed;
+      playerPos.y -= 10;
   }
   if(direction.down == true){
     if(playerPos.y < 450)
-      playerPos.y += currentSpeed;
+      playerPos.y += 10;
   }
 
   score += currentSpeed;
@@ -120,7 +144,7 @@ function updatePlayerPos(){
 // spawns an enemy on a random lane at a random position in the lane
 lastEnemyLane = 0;
 function spawnEnemy(){
-  lastSecond = now.getSeconds();
+  colors = ["white", "grey", "red", "blue", "pink", "purple", "brown", "orange", "darkred", "lightred", "cyan", "cornflowerblue", "magenta", "lightmagenta"];
   let lane = Math.floor(Math.random()*4);
   if(lane == lastEnemyLane){
     lane++;
@@ -130,14 +154,52 @@ function spawnEnemy(){
   lastEnemyLane = lane;
   let positionInLane = Math.floor(Math.random()*50);
   let enemyY = 100 + lane*100 + positionInLane;
-  let xOffset = Math.floor(Math.random()*200);
-  enemyPos.push({x: 1000+xOffset, y: enemyY})
+  let xOffset = Math.floor(Math.random()*100);
+  let carColor = Math.floor(Math.random()*colors.length);
+  enemyPos.push({x: width+xOffset, y: enemyY, color: colors[carColor]});
+}
+
+// check if pos object is hitting enemy
+function enemyCollision(pos){
+	hit = false;
+	enemyPos.forEach( enemy => {
+		xdist = Math.abs(enemy.x - pos.x);
+		ydist = Math.abs(enemy.y - pos.y);
+		if(xdist < 100 && ydist < 50){
+			hit = true;
+			enemy.x = -150;
+		}
+	});
+	return hit;
+}
+function fuelCollision(){
+	// check gas can and player collisison
+	xcan = Math.abs(fuelCanPos.x - playerPos.x);
+	ycan = Math.abs(fuelCanPos.y - playerPos.y);
+	if(xcan < 100 && ycan < 50){
+		fuelCanPos = {x: -50, y:0}
+		newfuel = fuel + 75;
+		if(newfuel > 200)
+			fuel = 200;
+		else 
+			fuel = newfuel;
+	}
+}
+
+// Spawns dark green rect for fuel and checks for collision
+function spawnFuel(){
+	let lane = Math.floor(Math.random()*4);
+  	fuelCanPos = {x: width+50, y: 130+lane*100}
+  	if(enemyCollision(fuelCanPos)){
+  		fuelCollision.x += 130;
+  	}
 }
 
 // Draws the background and animates it
 function drawBackground(ctx){
+  // Draw lines on road
   for(let i = 2; i < 5; i++){
-    for(let j = 0; j < 11; j ++){
+    for(let j = 0; j < width/10; j ++){
       ctx.strokeStyle = "yellow";
       ctx.lineWidth = "5";
       ctx.beginPath();
@@ -148,28 +210,29 @@ function drawBackground(ctx){
   }
   // Draw road
   ctx.fillStyle = 'black';
-  ctx.fillRect(0, 100, 1000, 400);
+  ctx.fillRect(0, 100, width, 400);
   ctx.fillStyle = "darkgray";
-  ctx.fillRect(0, 80, 1000, 440);
+  ctx.fillRect(0, 80, width, 440);
   
   // Draw Score
   ctx.font = "30px Arial";
   ctx.fillText("Score: "+Math.floor(score/100), 50, 50);
 
   // Draw Lives
-  ctx.fillText("Lives: "+lives, 800, 50);
+  ctx.fillText("Lives: "+lives, width-200, 50);
 
   // Draw Fuel
   ctx.font = "30px Arial";
-  ctx.fillText("Fuel", 300, 50);
+  ctx.fillText("Fuel", width/2 - 200, 50);
   ctx.strokeStyle = "black";
-  ctx.strokeRect(400, 20, 200, 40);
+  ctx.strokeRect(width/2 - 100, 20, 200, 40);
 
+  // change fuel color depending on amount
   if(fuel > 50)
     ctx.fillStyle = "green";
   else
     ctx.fillStyle = "red";
-  ctx.fillRect(400, 20, fuel, 40);
+  ctx.fillRect(width/2 - 100, 20, fuel, 40);
 
   // Decrement Fuel
   if(fuel > 0)
@@ -194,12 +257,13 @@ document.querySelector("#restart").addEventListener("click", event => {
   playerPos = {x: 100, y:300};
   enemyPos = [];
   lives = 3;
+  score = 0;
+  currentSpeed = 7;
   init();
 });
 
 // --------------- keyboard listeners ---------------------- //
 window.addEventListener('keydown', event => {
-  console.log("Pressed: " + event.key);
   if(event.key == "ArrowLeft" || event.key == "a")
       direction.left = true;
   if(event.key ==  "ArrowUp" || event.key == "w") // up arrow
@@ -211,7 +275,6 @@ window.addEventListener('keydown', event => {
 });
 
 window.addEventListener('keyup', event => {
-  console.log("Released: " + event.key);
   if(event.key == "ArrowLeft" || event.key == "a")
       direction.left = false;
   if(event.key ==  "ArrowUp" || event.key == "w") // up arrow
@@ -223,4 +286,8 @@ window.addEventListener('keyup', event => {
 });
 // --------------- keyboard listeners ---------------------- //
 
+window.addEventListener('resize', event =>{
+	width = window.innerWidth;
+	document.querySelector("#canvas").width = width;
+});
 </script>
