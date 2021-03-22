@@ -52,10 +52,13 @@ gameOver = false;
 lives = 3;
 frameCounter = 0;
 width = window.innerWidth;
+const gasImage = new Image(40, 50);
+gasImage.src = "can.png"
+const carImage = new Image(40, 50);
+carImage.src = "playerCar.png"
 // set canvas to window width
 document.querySelector("#canvas").width = width;
-// hide the canvas and game over div
-document.querySelector("#canvas").style.display = "none";
+// hide the game over div
 document.querySelector("#gameOver").style.display = "none";
 
 // Start the animation
@@ -93,7 +96,14 @@ function draw() {
   enemyPos.forEach(pos => {
   	// color and draw each enemy
     ctx.fillStyle = pos.color;
-    ctx.fillRect(pos.x, pos.y, 110, 50);
+    ctx.drawImage(carImage, pos.x, pos.y, 110, 50);
+    var newCar = ctx.getImageData(pos.x, pos.y, 110, 50);
+    for(var i = 0; i < id.data.length; i += 4){
+    	id.data[i] = 50 + Math.random()*200;
+    	id.data[i+1] = 50 + Math.random()*200;
+    	id.data[i+2] = 50 + Math.random()*200;
+    	id.data[i+3] = 50 + Math.random()*200;
+    }
     pos.x -= currentSpeed-4;
     // remove enemies that are off the screen
     if(pos.x < -110){
@@ -104,8 +114,7 @@ function draw() {
   
   // move and draw fuel can
   fuelCanPos.x -= currentSpeed-4
-  ctx.fillStyle = "darkgreen";
-  ctx.fillRect(fuelCanPos.x, fuelCanPos.y, 40, 50);
+  ctx.drawImage(gasImage, fuelCanPos.x, fuelCanPos.y, 40, 50);
 
   // remove 1 life if player hits enemy
   if(enemyCollision(playerPos)){
@@ -118,8 +127,7 @@ function draw() {
   fuelCollision();
 
   // Draw player
-  ctx.fillStyle = 'green';
-  ctx.fillRect(playerPos.x, playerPos.y, 110, 50);
+  ctx.drawImage(carImage, playerPos.x, playerPos.y, 110, 50);
 
   drawBackground(ctx);
 
