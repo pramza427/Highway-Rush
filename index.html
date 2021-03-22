@@ -104,6 +104,7 @@ function draw() {
     	id.data[i+2] = 50 + Math.random()*200;
     	id.data[i+3] = 50 + Math.random()*200;
     }
+    ctx.putImageData(imageData, pos.x, pos.y);
     pos.x -= currentSpeed-4;
     // remove enemies that are off the screen
     if(pos.x < -110){
