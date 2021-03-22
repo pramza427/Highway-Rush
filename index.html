@@ -97,7 +97,7 @@ function draw() {
   	// color and draw each enemy
     ctx.fillStyle = pos.color;
     ctx.drawImage(carImage, pos.x, pos.y, 110, 50);
-    var newCar = ctx.getImageData(pos.x, pos.y, 110, 50);
+    var id = ctx.getImageData(pos.x, pos.y, 110, 50);
     for(var i = 0; i < id.data.length; i += 4){
     	id.data[i] = 50 + Math.random()*200;
     	id.data[i+1] = 50 + Math.random()*200;
