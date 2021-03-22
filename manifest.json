@@ -9,7 +9,7 @@
     "description": "A game where you race down the street avoiding other cars",
     "icons": [
         {
-            "src": "/pngs/playerCar.png",
+            "src": "https://pramza427.github.io/IT202-Spring2021-project2/pngs/playerCar.png",
             "sizes": "192x192",
             "type": "image/png"
         }
