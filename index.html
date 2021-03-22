@@ -53,9 +53,10 @@ lives = 3;
 frameCounter = 0;
 width = window.innerWidth;
 const gasImage = new Image(40, 50);
-gasImage.src = "https://pramza427.github.io/IT202-Spring2021-project2/can.png"
-const carImage = new Image(40, 50);
-carImage.src = "https://pramza427.github.io/IT202-Spring2021-project2/playerCar.png"
+gasImage.src = "https://pramza427.github.io/IT202-Spring2021-project2/pngs/can.png"
+const playerImage = new Image(40, 50);
+playerImage.src = "https://pramza427.github.io/IT202-Spring2021-project2/pngs/playerCar.png"
+enemyImages = []
 // set canvas to window width
 document.querySelector("#canvas").width = width;
 // hide the game over div
@@ -63,6 +64,12 @@ document.querySelector("#gameOver").style.display = "none";
 
 // Start the animation
 function init() {
+  // add enemy sprites to array
+  for(var i = 0; i < 6; i++){
+  	const enemyImage = newImage(100, 50);
+  	enemyImage.src = "https://pramza427.github.io/IT202-Spring2021-project2/pngs/enemy" + i + ".png";
+  	enemyImages.push(enemyImage);
+  }
   window.requestAnimationFrame(draw);
 }
 
@@ -94,18 +101,10 @@ function draw() {
 
   // draw and update enemies
   enemyPos.forEach(pos => {
+  	pos.x -= currentSpeed-4;
   	// color and draw each enemy
     ctx.fillStyle = pos.color;
-    ctx.drawImage(carImage, pos.x, pos.y, 110, 50);
-    var id = ctx.getImageData(pos.x, pos.y, 110, 50);
-    for(var i = 0; i < id.data.length; i += 4){
-    	id.data[i] = 50 + Math.random()*200;
-    	id.data[i+1] = 50 + Math.random()*200;
-    	id.data[i+2] = 50 + Math.random()*200;
-    	id.data[i+3] = 50 + Math.random()*200;
-    }
-    ctx.putImageData(id, pos.x, pos.y);
-    pos.x -= currentSpeed-4;
+    ctx.drawImage(enemyImages[pos.color], pos.x, pos.y, 110, 50);
     // remove enemies that are off the screen
     if(pos.x < -110){
       index = enemyPos.indexOf(pos)
@@ -168,7 +167,6 @@ function updatePlayerPos(){
 // with a random color
 lastEnemyLane = 0; // keep track of last spawn to not overlap
 function spawnEnemy(){
-  colors = ["white", "grey", "red", "blue", "pink", "purple", "brown", "orange", "darkred", "lightred", "cyan", "cornflowerblue", "magenta", "lightmagenta"];
   // choose a lane, if it was the last one used then dont use it
   let lane = Math.floor(Math.random()*4); 
   if(lane == lastEnemyLane){
@@ -184,7 +182,7 @@ function spawnEnemy(){
   // offset the x position to make the road feel more natural
   let xOffset = Math.floor(Math.random()*100);
   // set car color
-  let carColor = Math.floor(Math.random()*colors.length);
+  let carColor = Math.floor(Math.random()*5);
   // add enemy to enemy list
   enemyPos.push({x: width+xOffset, y: enemyY, color: colors[carColor]}); 
 }
