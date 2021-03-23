@@ -3,7 +3,7 @@
     "background_color": "#690505",
     "display": "standalone",
     "scope": "/",
-    "start_url": "IT202-Spring2021-project2/index.html",
+    "start_url": "/",
     "app_name": "Street Racing",
     "short_name": "Proj2",
     "description": "A game where you race down the street avoiding other cars",
