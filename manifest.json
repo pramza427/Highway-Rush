@@ -12,6 +12,11 @@
             "src": "https://pramza427.github.io/IT202-Spring2021-project2/pngs/playerCar.png",
             "sizes": "192x192",
             "type": "image/png"
+        },
+        {
+            "src": "https://pramza427.github.io/IT202-Spring2021-project2/pngs/playerCar.png",
+            "sizes": "512x512",
+            "type": "image/png"
         }
     ]
 }
