@@ -11,9 +11,9 @@ lives = 3;
 frameCounter = 0;
 width = window.innerWidth;
 const gasImage = new Image(40, 50);
-gasImage.src = "https://pramza427.github.io/IT202-Spring2021-project2/pngs/can.png"
+gasImage.src = "https://pramza427.github.io/Highway-Rush/pngs/can.png"
 const playerImage = new Image(40, 50);
-playerImage.src = "https://pramza427.github.io/IT202-Spring2021-project2/pngs/playerCar.png"
+playerImage.src = "https://pramza427.github.io/Highway-Rush/pngs/playerCar.png"
 enemyImages = []
 // set canvas to window width
 document.querySelector("#canvas").width = width;
@@ -25,7 +25,7 @@ function init() {
   // add enemy sprites to array
   for(var i = 0; i < 6; i++){
   	const enemyImage = new Image(100, 50);
-  	enemyImage.src = "https://pramza427.github.io/IT202-Spring2021-project2/pngs/enemy" + i + ".png";
+  	enemyImage.src = "https://pramza427.github.io/Highway-Rush/pngs/enemy" + i + ".png";
   	enemyImages.push(enemyImage);
   }
   window.requestAnimationFrame(draw);
